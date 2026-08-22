@@ -1,0 +1,16 @@
+{
+  "_comment": "Add a newsletter by appending an entry. 'structure': itemized = split into discrete items; essay = one record per issue. 'spec' names the section of references/PARSE_SOURCES.md documenting the format.",
+  "sources": [
+    {"name":"TLDR","query":"from:dan@tldrnewsletter.com","structure":"itemized","spec":"PARSE_SPEC_TLDR.md","titles_are_uppercase":true,
+     "notes":"Multiple daily editions. Real text/plain body with a [n] footnote link map. Filed under a label, NOT the inbox — never scope with in:inbox."},
+    {"name":"The Flyover","query":"from:news@editor.jointheflyover.com","structure":"itemized","spec":"PARSE_SOURCES.md#the-flyover","titles_are_uppercase":false,
+     "notes":"~2 sends/day; roughly one per day is a whole-issue ad. Parse from FULL_CONTENT HTML — section names live in heading image alt text. Multiple bullets can share one physical line. Bullet titles are synthesized from the opening clause; end them at a sentence/clause boundary, never a hard char cut."},
+    {"name":"The Verge","query":"from:theverge.com","structure":"itemized","spec":"PARSE_SOURCES.md#the-verge","titles_are_uppercase":false,
+     "notes":"Two sub-editions: 'Following' (no-reply@, daily) and 'Subscriber Update' (subscriptions@, irregular). Digests end with empty item skeletons that must be dropped."},
+    {"name":"Keychain","query":"from:hello@keychain.com","structure":"itemized","spec":"PARSE_SOURCES.md#keychain","titles_are_uppercase":false,
+     "notes":"'The Daily Fast 5' — exactly 5 items per issue, weekdays only, asterisk-row delimited. SendGrid encrypted links are NOT resolvable; stored but flagged."}
+  ],
+  "excluded": [
+    {"name":"Mailbrew","query":"from:noreply@mailbrew.com","reason":"link-only items with no summaries; it is a digest of the user's own inbox"}
+  ]
+}
