@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+.enzyme/
+
+# build intermediates -- regenerate with tools/enrich_all.py and tools/build.py
+items.json
+parsed/
+site/
+archive-offline.html
