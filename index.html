@@ -275,6 +275,10 @@ async function loadData(){
 
 let DATA, ITEMS=[], DATES, SOURCES, EDITIONS, SECTIONS, CATS, COMPS, TECHS, SRCS, RTS, AUTHORS;
 const D=0,SO=1,E=2,S=3,T=4,SUM=5,U=6,SRC=7,RT=8,MIN=9,SP=10,CO=11,TE=12,CAT=13,XP=14,AMT=15,AU=16,RES=17;
+// Placeholder the build writes when it could not decode a tracker offline. It
+// means "we don't know the destination", NOT "the link is broken" -- a tldr
+// short link is a plain 301 and works fine in a browser.
+const NO_SRC='unresolvable link';
 const BLOB=18, YR=19;
 
 const state = {
@@ -388,6 +392,7 @@ function renderFacets(){
   for(const f of FACETS){
     const counts=facetCounts(f), dict=f.dict?f.dict():null;
     let entries=[...counts.entries()].map(([v,n])=>({v,n,label:dict?dict[v]:String(v)})).filter(e=>e.n>0);
+    for(const e of entries) if(e.label===NO_SRC) e.label='source unknown';
     if(f.key==='yr') entries.sort((a,b)=>b.label.localeCompare(a.label));
     else entries.sort((a,b)=>b.n-a.n||a.label.localeCompare(b.label));
     const q=(ffilters[f.key]||'').toLowerCase();
@@ -555,9 +560,11 @@ function rowHTML(r){
   for(const c of r[CO].slice(0,4)) chips.push(`<span class="chip co" data-co="${esc(COMPS[c])}">${esc(COMPS[c])}</span>`);
   for(const t of r[TE].slice(0,3)) chips.push(`<span class="chip">${esc(TECHS[t])}</span>`);
 
-  const sect=SECTIONS[r[S]]||'', rt=r[RT]>=0?RTS[r[RT]]:'', src=r[SRC]>=0?SRCS[r[SRC]]:'';
+  const sect=SECTIONS[r[S]]||'', rt=r[RT]>=0?RTS[r[RT]]:'';
+  let src=r[SRC]>=0?SRCS[r[SRC]]:'';
+  if(src===NO_SRC) src = r[U] ? 'via tldr redirect' : '';
   const au=r[AU]>=0?AUTHORS[r[AU]]:'';
-  const title = (r[U] && r[RES])
+  const title = r[U]
       ? `<a href="${esc(r[U])}" target="_blank" rel="noopener">${hl(r[T])}</a>`
       : hl(r[T]);
   return `<div class="bar" style="background:${srcColor[r[SO]]}"></div>
@@ -629,7 +636,7 @@ function exportCSV(){
     DATES[r[D]],SOURCES[r[SO]],EDITIONS[r[E]],SECTIONS[r[S]]||'',CATS[r[CAT]],r[T],
     r[AU]>=0?AUTHORS[r[AU]]:'',r[SUM],r[RT]>=0?RTS[r[RT]]:'',
     r[CO].map(c=>COMPS[c]).join('; '),r[TE].map(x=>TECHS[x]).join('; '),
-    r[SRC]>=0?SRCS[r[SRC]]:'',r[RES]?r[U]:'',r[SP]?'yes':'no'
+    r[SRC]>=0?SRCS[r[SRC]]:'',r[U],r[SP]?'yes':'no'
   ].map(qq).join(','));
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}));
