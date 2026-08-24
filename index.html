@@ -55,6 +55,7 @@ h1{font-size:17px;margin:0;font-weight:650;letter-spacing:-.01em;white-space:now
   padding:6px 11px;cursor:pointer;color:var(--ink-2);font-size:12.5px;white-space:nowrap;
 }
 .iconbtn:hover{background:var(--plane)}
+.opt.dim .lbl,.opt.dim .n{color:var(--muted);font-style:italic}
 .iconbtn .badge[hidden]{display:none}
 .iconbtn .badge{
   display:inline-block;min-width:16px;padding:0 4px;margin-left:5px;border-radius:8px;
@@ -392,9 +393,9 @@ function renderFacets(){
   for(const f of FACETS){
     const counts=facetCounts(f), dict=f.dict?f.dict():null;
     let entries=[...counts.entries()].map(([v,n])=>({v,n,label:dict?dict[v]:String(v)})).filter(e=>e.n>0);
-    for(const e of entries) if(e.label===NO_SRC) e.label='source unknown';
+    for(const e of entries) if(e.label===NO_SRC){ e.label='source unknown'; e.dim=true; }
     if(f.key==='yr') entries.sort((a,b)=>b.label.localeCompare(a.label));
-    else entries.sort((a,b)=>b.n-a.n||a.label.localeCompare(b.label));
+    else entries.sort((a,b)=>(a.dim?1:0)-(b.dim?1:0)||b.n-a.n||a.label.localeCompare(b.label));
     const q=(ffilters[f.key]||'').toLowerCase();
     if(q) entries=entries.filter(e=>e.label.toLowerCase().includes(q));
 
@@ -402,6 +403,7 @@ function renderFacets(){
     const limit=expanded[f.key]?1e9:(f.limit||1e9);
     const shown=entries.slice(0,limit);
     for(const e of entries) if(sel.has(e.v)&&!shown.includes(e)) shown.push(e);
+    for(const e of entries) if(e.dim&&!shown.includes(e)) shown.push(e);
 
     const g=document.createElement('div');
     g.className='fgroup'+(sel.size?' active':''); g.dataset.fkey=f.key;
@@ -421,7 +423,7 @@ function renderFacets(){
     }
     for(const e of shown){
       const o=document.createElement('div');
-      o.className='opt'+(sel.has(e.v)?' on':'');
+      o.className='opt'+(sel.has(e.v)?' on':'')+(e.dim?' dim':'');
       const sw=f.color?`<span class="swatch" style="background:${srcColor[e.v]}"></span>`:'';
       o.innerHTML=`<input type="checkbox" ${sel.has(e.v)?'checked':''}>${sw}<span class="lbl" title="${esc(e.label)}">${esc(e.label)}</span><span class="n">${fmt(e.n)}</span>`;
       o.onclick=()=>{ sel.has(e.v)?sel.delete(e.v):sel.add(e.v); apply(); };
